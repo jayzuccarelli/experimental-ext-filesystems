@@ -12,6 +12,8 @@ This repository holds the working documents and reference implementations for **
 
 | Document | Description |
 | :--- | :--- |
+| [Problem Statement](docs/problem-statement.md) | What is missing from Resources today, and what the charter asks for |
+| [Use Cases](docs/use-cases.md) | Concrete situations Resource operations should serve |
 | [Open Questions](docs/open-questions.md) | Questions the group needs to settle, starting with the charter's |
 | [Decision Log](docs/decisions.md) | ADR-lite record of the group's decisions, and the vehicle for proposing changes |
 | [Related Work](docs/related-work.md) | SEPs, extensions, and discussions this work builds on |
