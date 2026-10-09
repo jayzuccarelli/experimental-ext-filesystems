@@ -1,6 +1,6 @@
 # Resource operations: strawman
 
-**Status:** Draft strawman for discussion. Not accepted by the Files Working Group, not part of any specification. Written to be torn apart.
+**Status:** Draft strawman for discussion. Not accepted by the Files Working Group, not part of any specification.
 
 **Decision log entry:** [2026-10-09](../decisions.md#2026-10-09-strawman-for-resource-operations-stat-create-update-delete-with-version-based-concurrency)  
 **Prototype:** [`python/sdk/`](../../python/sdk/) · **Conformance scenarios:** [`conformance/`](../../conformance/)
