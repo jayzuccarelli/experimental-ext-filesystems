@@ -1,0 +1,8 @@
+# CODEOWNERS for the experimental-ext-filesystems repository.
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Team mappings are configured in the access repository:
+# https://github.com/modelcontextprotocol/access
+
+# Default owners for all files: reviews route to the Files Working Group.
+* @modelcontextprotocol/filesystems-wg
