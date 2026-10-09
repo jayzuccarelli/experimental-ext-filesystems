@@ -4,7 +4,7 @@ This document records significant decisions made by the Files Working Group abou
 
 For background on the ADR format, see [adr.github.io](https://adr.github.io/).
 
-No decisions have been recorded yet. The first one the charter calls for is listed in [open-questions.md](open-questions.md).
+No decisions have been accepted yet. The first one the charter calls for is listed in [open-questions.md](open-questions.md).
 
 ## Entry format
 
@@ -26,3 +26,20 @@ Add new entries below this section, oldest first. A pull request that adds an en
 ```
 
 ---
+
+### 2026-10-09: Strawman for Resource operations: stat, create, update, delete with version-based concurrency
+
+**Status:** Proposed
+
+**Context:** Workstream 2 of the [charter](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/3389) asks for create, update, delete, and `stat`, typed errors, and optimistic concurrency control on writes including create-if-absent ([open questions](open-questions.md) 2 to 6). Options considered for concurrency: no precondition (last writer wins), timestamps (`lastModified`), and an opaque server-minted version compared on write. For listing: a new method, or the `resources/directory/read` method already defined by the Skills extension (SEP-2640).
+
+**Decision:** Use [docs/proposals/resource-operations.md](proposals/resource-operations.md) as the group's starting strawman: an extension `io.modelcontextprotocol/resource-operations` (provisional) with `resources/stat`, `resources/create` (create-if-absent only), `resources/update` (requires `ifMatch`), and `resources/delete` (optional `ifMatch`); an opaque `version` as the concurrency token; a precondition-failed error carrying `currentVersion`; and reuse of `resources/directory/read` unchanged for listing. Search, glob, bulk reads, and ranges are deferred.
+
+**Rationale:** An opaque version is what HTTP ETags, S3, and GCS already use, survives coarse clocks, and lets each server choose a counter, digest, or backend generation. Required `ifMatch` on update rules out lost updates by omission. Reusing SEP-2640's method avoids two listing methods for the same tree. The vocabulary (`version`, change-set entries with `effect`) follows Kryspin Ziemski's working document shared in #filesystem-wg, so later Query and Range work can build on it. A Python prototype built on the SDK's `Extension`/`MethodBinding` API and conformance scenarios accompany the draft.
+
+**References:**
+- [Proposal](proposals/resource-operations.md), [Python prototype](../python/sdk/), [conformance scenarios](../conformance/)
+- [SEP-2571](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2571) (closed): `resources/create` and `resources/delete`
+- [SEP-2640](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2640): Skills extension, `resources/directory/read`
+- [SEP-2133](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2133), [SEP-3371](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/3371): extensions framework and SDK extension points
+- Kryspin Ziemski's working document "MCP Resources as Addressable Domain State", shared in #filesystem-wg
