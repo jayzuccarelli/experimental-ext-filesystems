@@ -2,7 +2,7 @@
 name = "mcp-ext-filesystems"
 version = "0.1.0"
 description = "Python reference implementation of the experimental MCP Resource operations extension"
-authors = [{name = "The MCP Files Working Group"}]
+authors = [{name = "The MCP Filesystems Working Group"}]
 readme = "README.md"
 license = {text = "Apache-2.0"}
 requires-python = ">=3.10"
