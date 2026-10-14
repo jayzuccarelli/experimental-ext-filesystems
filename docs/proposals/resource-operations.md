@@ -1,6 +1,6 @@
 # Resource operations: strawman
 
-**Status:** Draft strawman for discussion. Not accepted by the Files Working Group, not part of any specification.
+**Status:** Draft strawman for discussion. Not accepted by the Filesystems Working Group, not part of any specification.
 
 **Decision log entry:** [2026-10-09](../decisions.md#2026-10-09-strawman-for-resource-operations-stat-create-update-delete-with-version-based-concurrency)  
 **Prototype:** [`python/sdk/`](../../python/sdk/) · **Conformance scenarios:** [`conformance/`](../../conformance/)
@@ -9,7 +9,7 @@
 
 Resources can be listed and read, but not created, updated, deleted, or inspected without reading the content ([problem statement](../problem-statement.md)). Servers that need writes expose them as tools with ad hoc names, arguments, and errors, and nothing stops two writers from overwriting each other ([use cases](../use-cases.md): shared state written by several agents, memory servers).
 
-This strawman covers the smallest slice of workstream 2 that fixes the write path: a metadata read (`resources/stat`), `resources/create` with create-if-absent semantics, `resources/update` conditional on a version, `resources/delete` with an optional version check, typed errors, and how these interact with existing cache and notification fields. Listing reuses `resources/directory/read` from SEP-2640. Search, glob, bulk reads, and ranges are deferred.
+This strawman covers the smallest slice of the charter's scope that fixes the write path: a metadata read (`resources/stat`), `resources/create` with create-if-absent semantics, `resources/update` conditional on a version, `resources/delete` with an optional version check, typed errors, and how these interact with existing cache and notification fields. Listing reuses `resources/directory/read` from SEP-2640. Search, glob, bulk reads, and ranges are deferred.
 
 Vocabulary follows Kryspin Ziemski's working document shared in #filesystem-wg ("MCP Resources as Addressable Domain State"), which proposes Create, Read, Update, Delete, Query, and Range (CRUDQR) over Resources and a change-set entry `{uri, effect, previousVersion?, version?}`. This draft covers C, U, D, plus `stat`, and uses `version` as the concurrency token and the change-set entry in write results. Query and Range are deferred.
 
@@ -151,7 +151,7 @@ The cleaner long-term shape is probably for one definition to live in one place 
 
 - **Search and glob (Query).** The query language and glob semantics over URIs (as opposed to paths) are unsettled; Kryspin's document lists the query language as open. Better to land the write path first than to block it on a query design.
 - **Recursive traversal.** Clients descend with repeated `resources/directory/read` calls. A recursive variant needs limits and pagination rules that are easier to set once listing is settled.
-- **Bulk reads.** Their size limits and failure modes depend on the content transfer workstream.
+- **Bulk reads.** Their size limits and failure modes depend on the File Uploads Working Group's transfer design.
 - **Range.** Partial reads and writes need range coordinates (bytes, lines, records) and overlap with `resources/stream` (SEP-2532), which the charter assigns to content transfer.
 
 ## Errors
@@ -206,7 +206,7 @@ Numbers refer to [open-questions.md](../open-questions.md); "new" marks question
 
 ## Not addressed
 
-- **Content transfer.** Content travels inline. Out-of-band transfer, digests, size limits, and streaming belong to workstream 1; `create` and `update` will need a way to reference transferred content once that exists.
-- **File inputs.** Marking tool or elicitation inputs as files is workstream 3. Nothing here depends on it.
+- **Content transfer.** Content travels inline. Out-of-band transfer, digests, size limits, and streaming belong to the File Uploads Working Group; `create` and `update` will need a way to reference transferred content once that exists.
+- **File inputs.** Marking tool or elicitation inputs as files belongs to the File Uploads Working Group. Nothing here depends on it.
 - **Whether files are Resource URIs.** The charter's cross-cutting decision ([open question 1](../open-questions.md)). This draft operates on Resource URIs because that is what exists today; it takes no position on the decision.
 - **Authorization.** Who may write what is out of the charter's scope beyond stating that the existing MCP authorization specification applies.
