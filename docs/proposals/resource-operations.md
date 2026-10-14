@@ -48,7 +48,7 @@ A `version` is an opaque string minted by the server for the current state of on
 
 ## Methods
 
-Content in `create` and `update` uses the core `TextResourceContents` or `BlobResourceContents` shape, the same one `resources/read` returns. `contents.uri` MUST equal `uri`. Content travels inline; moving large content is the content transfer workstream's job.
+Content in `create` and `update` uses the core `TextResourceContents` or `BlobResourceContents` shape, the same one `resources/read` returns. `contents.uri` MUST equal `uri`. Content travels inline; moving large content is the File Uploads Working Group's job.
 
 ### `resources/stat`
 
