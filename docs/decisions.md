@@ -1,6 +1,6 @@
 # Decision Log
 
-This document records significant decisions made by the Files Working Group about Resource operations, using an ADR-lite (Architecture Decision Record) format. It serves as a transparent, auditable trace of the group's reasoning over time.
+This document records significant decisions made by the Filesystems Working Group about Resource operations, using an ADR-lite (Architecture Decision Record) format. It serves as a transparent, auditable trace of the group's reasoning over time.
 
 For background on the ADR format, see [adr.github.io](https://adr.github.io/).
 

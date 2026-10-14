@@ -2,9 +2,9 @@
 
 > **Status:** Experimental. This work is for prototyping and feedback only, and is not an accepted or official MCP extension.
 
-This repository holds the working documents and reference implementations for **Resource operations**: a common interface for operating on MCP Resources beyond a single read (`create`, `update`, `delete`, a metadata read (`stat`), scoped listing, search, and glob matching), with optimistic concurrency control on writes. It is maintained by the Files Working Group, which replaces the File Uploads and Filesystems Working Groups.
+This repository holds the working documents and reference implementations for **Resource operations**: a common interface for operating on MCP Resources beyond a single read (`create`, `update`, `delete`, and a metadata read, `stat`), with optimistic concurrency control on writes and a defined interaction with change notification and caching. It is maintained by the Filesystems Working Group, which coordinates with the [File Uploads Working Group](https://modelcontextprotocol.io/community/working-groups/file-uploads) on where an upload flow ends and a resource write begins.
 
-**Charter:** [Files Working Group charter](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/3389) (in review): mission, scope, leadership, and active work items.
+**Charter:** [Filesystems Working Group charter](https://modelcontextprotocol.io/community/working-groups/filesystems): mission, scope, leadership, and active work items.
 **Discord:** `#filesystem-wg` on the [MCP Discord](https://modelcontextprotocol.io/community/communication#discord).
 **Open work:** [pull requests](https://github.com/modelcontextprotocol/experimental-ext-filesystems/pulls) and [issues](https://github.com/modelcontextprotocol/experimental-ext-filesystems/issues). Proposals, findings, and implementations are welcome.
 
@@ -29,7 +29,7 @@ Nothing under `docs/` is part of a specification. A specification will live unde
 | :--- | :--- | :--- | :--- |
 | Python | `python/sdk/` | `mcp-ext-filesystems` | Planned |
 
-The charter also lists a TypeScript SDK reference implementation ([@ochafik](https://github.com/ochafik)).
+The charter's success criteria call for reference implementations in at least two Tier 1 SDKs.
 
 ## Contributing
 

@@ -6,10 +6,10 @@ SEPs, extensions, and discussions that Resource operations build on or must stay
 
 | SEP | Status | Relevance |
 | :--- | :--- | :--- |
-| [SEP-2571](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2571) | Closed 2026-09-22 | Proposed `resources/create` and `resources/delete`. The charter takes its create and delete operations as input to workstream 2. |
-| [SEP-2631](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2631) | Draft | File objects and out-of-band transfer. Input to the content transfer and file input workstreams. |
+| [SEP-2571](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2571) | Closed 2026-09-22 | Proposed `resources/create` and `resources/delete`. The charter names taking it up with its author as the group's first work item. |
+| [SEP-2631](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2631) | Draft | File objects and out-of-band transfer. The [File Uploads Working Group](https://modelcontextprotocol.io/community/working-groups/file-uploads) plans to supersede it with a new SEP. |
 | [SEP-2532](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2532) | Open | `resources/stream`. To be reconciled with the transfer work. |
-| [SEP-2356](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2356) | Closed 2026-06-26 | File input model. Input to the file inputs workstream. |
+| [SEP-2356](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/2356) | Closed 2026-06-26 | File input model, closed in favour of SEP-2631. |
 
 ## Extension framework
 
