@@ -2,7 +2,7 @@
 
 ## How to Participate
 
-The Files Working Group welcomes contributions from anyone interested in operating on MCP Resources beyond a single read. You can participate by:
+The Filesystems Working Group welcomes contributions from anyone interested in operating on MCP Resources beyond a single read. You can participate by:
 
 - Joining the discussion in `#filesystem-wg` on the MCP Discord (info on joining the server [here](https://modelcontextprotocol.io/community/communication#discord))
 - Opening pull requests with concrete proposals, so the group can comment on specifics
@@ -18,7 +18,7 @@ The Files Working Group welcomes contributions from anyone interested in operati
 
 ## Meetings
 
-Working Session cadence is defined in the [charter](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/3389). Meeting requirements (advance notice, agendas, and notes) follow MCP [group governance](https://modelcontextprotocol.io/community/working-interest-groups#meeting-requirements).
+Working Session cadence is defined in the [charter](https://modelcontextprotocol.io/community/working-groups/filesystems). Meeting requirements (advance notice, agendas, and notes) follow MCP [group governance](https://modelcontextprotocol.io/community/working-interest-groups#meeting-requirements).
 
 ## Decision-Making
 

@@ -1,6 +1,6 @@
 ## What to reference as a source
 
-Nothing in this repository is a specification yet. The [Files Working Group charter](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/3389) defines the scope. The `docs/` folder holds open questions, the decision log, related work, and the implementations list. Treat it as context, not as normative text.
+Nothing in this repository is a specification yet. The [Filesystems Working Group charter](https://modelcontextprotocol.io/community/working-groups/filesystems) defines the scope. The `docs/` folder holds open questions, the decision log, related work, and the implementations list. Treat it as context, not as normative text.
 
 Do not describe a proposal in this repository as an accepted or official part of MCP. Until accepted text lands under `specification/`, everything here is experimental.
 
