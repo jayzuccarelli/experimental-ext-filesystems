@@ -8,7 +8,7 @@ The charter names multi-agent and job orchestration systems as the motivating co
 
 ## Memory servers
 
-A memory server stores facts as files that an agent reads and rewrites. Today a write is a tool call that replaces the file, so two sessions updating the same memory lose one update without either noticing. A conditional write (update only if the version is still the one I read) and create-if-absent would make that safe, and `notifications/resources/updated` would tell other sessions to re-read.
+A memory server stores facts as files that an agent reads and rewrites. Today a write is a tool call that replaces the file, so two sessions updating the same memory lose one update without either noticing. A conditional write (update only if the revision is still the one I read) and create-if-absent would make that safe, and `notifications/resources/updated` would tell other sessions to re-read.
 
 ## Servers that ask for base64 content in prose
 
