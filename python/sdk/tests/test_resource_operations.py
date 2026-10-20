@@ -15,7 +15,7 @@ from mcp_ext_filesystems import (
     EXTENSION_ID,
     NOT_SUPPORTED,
     PRECONDITION_FAILED,
-    VERSION_META_KEY,
+    REVISION_META_KEY,
     AlreadyExists,
     InMemoryStore,
     InvalidResourceUri,
@@ -23,7 +23,7 @@ from mcp_ext_filesystems import (
     ResourceNotFound,
     ResourceOperations,
     ResourceOperationsClient,
-    VersionMismatch,
+    RevisionMismatch,
 )
 from mcp_ext_filesystems.wire import DIRECTORY_MIME_TYPE, StatParams, StatRequest, StatResult
 
@@ -65,56 +65,60 @@ async def test_create_stat_update_delete() -> None:
         assert created.resource.size == 2
         assert created.resource.annotations is not None and created.resource.annotations.last_modified
         assert [c.effect for c in created.changes] == ["created"]
-        assert created.changes[0].version == created.version
+        assert created.changes[0].revision == created.revision
 
         stat = await ops.stat(URI)
-        assert stat.version == created.version
+        assert stat.revision == created.revision
         assert stat.resource.mime_type == "text/markdown"
 
-        updated = await ops.update(URI, text("version two"), if_match=stat.version)
-        assert updated.version != stat.version
-        assert updated.resource.size == len("version two")
+        updated = await ops.update(URI, text("revision two"), if_match=stat.revision)
+        assert updated.revision != stat.revision
+        assert updated.resource.size == len("revision two")
         change = updated.changes[0]
-        assert (change.effect, change.previous_version, change.version) == ("updated", stat.version, updated.version)
+        assert (change.effect, change.previous_revision, change.revision) == (
+            "updated",
+            stat.revision,
+            updated.revision,
+        )
 
-        deleted = await ops.delete(URI, if_match=updated.version)
+        deleted = await ops.delete(URI, if_match=updated.revision)
         assert deleted.changes[0].effect == "deleted"
-        assert deleted.changes[0].previous_version == updated.version
+        assert deleted.changes[0].previous_revision == updated.revision
         with pytest.raises(ResourceNotFound):
             await ops.stat(URI)
 
 
-async def test_create_if_absent_conflict_returns_the_current_version() -> None:
+async def test_create_if_absent_conflict_returns_the_current_revision() -> None:
     async with Client(make_server()) as client:
         ops = ResourceOperationsClient(client.session)
         first = await ops.create(URI, text("mine"))
         with pytest.raises(AlreadyExists) as caught:
             await ops.create(URI, text("theirs"))
     assert caught.value.code == PRECONDITION_FAILED
-    assert caught.value.data == {"uri": URI, "reason": "alreadyExists", "currentVersion": first.version}
+    assert caught.value.data == {"uri": URI, "reason": "alreadyExists", "currentRevision": first.revision}
 
 
-async def test_stale_if_match_is_rejected_with_the_current_version() -> None:
+async def test_stale_if_match_is_rejected_with_the_current_revision() -> None:
     async with Client(make_server()) as client:
         ops = ResourceOperationsClient(client.session)
-        v1 = (await ops.create(URI, text("one"))).version
-        v2 = (await ops.update(URI, text("two"), if_match=v1)).version
-        with pytest.raises(VersionMismatch) as caught:
+        v1 = (await ops.create(URI, text("one"))).revision
+        v2 = (await ops.update(URI, text("two"), if_match=v1)).revision
+        with pytest.raises(RevisionMismatch) as caught:
             await ops.update(URI, text("stale"), if_match=v1)
-        assert (await ops.stat(URI)).version == v2
+        assert (await ops.stat(URI)).revision == v2
     assert caught.value.code == PRECONDITION_FAILED
-    assert caught.value.data == {"uri": URI, "reason": "versionMismatch", "currentVersion": v2}
+    assert caught.value.data == {"uri": URI, "reason": "revisionMismatch", "currentRevision": v2}
 
 
 async def test_delete_with_stale_if_match_keeps_the_resource() -> None:
     async with Client(make_server()) as client:
         ops = ResourceOperationsClient(client.session)
-        v1 = (await ops.create(URI, text("one"))).version
-        v2 = (await ops.update(URI, text("two"), if_match=v1)).version
-        with pytest.raises(VersionMismatch) as caught:
+        v1 = (await ops.create(URI, text("one"))).revision
+        v2 = (await ops.update(URI, text("two"), if_match=v1)).revision
+        with pytest.raises(RevisionMismatch) as caught:
             await ops.delete(URI, if_match=v1)
-        assert caught.value.current_version == v2
-        assert (await ops.stat(URI)).version == v2
+        assert caught.value.current_revision == v2
+        assert (await ops.stat(URI)).revision == v2
         await ops.delete(URI)
         with pytest.raises(ResourceNotFound):
             await ops.stat(URI)
@@ -146,9 +150,9 @@ async def test_update_and_delete_notify_resource_subscribers() -> None:
     server = make_server()
     async with Client(server) as watcher, Client(server) as writer:
         ops = ResourceOperationsClient(writer.session)
-        version = (await ops.create(URI, text("one"))).version
+        revision = (await ops.create(URI, text("one"))).revision
         async with watcher.listen(resource_subscriptions=[URI]) as subscription:
-            await ops.update(URI, text("two"), if_match=version)
+            await ops.update(URI, text("two"), if_match=revision)
             with anyio.fail_after(2):
                 assert await subscription.__anext__() == ResourceUpdated(uri=URI)
             await ops.delete(URI)
@@ -157,7 +161,7 @@ async def test_update_and_delete_notify_resource_subscribers() -> None:
 
 
 async def test_lost_update_is_rejected() -> None:
-    """docs/use-cases.md, Memory servers: two sessions read the same version and both write it back."""
+    """docs/use-cases.md, Memory servers: two sessions read the same revision and both write it back."""
     server = make_server()
     async with Client(server) as first, Client(server) as second:
         a, b = ResourceOperationsClient(first.session), ResourceOperationsClient(second.session)
@@ -165,16 +169,16 @@ async def test_lost_update_is_rejected() -> None:
 
         seen_by_a = await a.stat(URI)
         seen_by_b = await b.stat(URI)
-        assert seen_by_a.version == seen_by_b.version
+        assert seen_by_a.revision == seen_by_b.revision
 
-        written = await a.update(URI, text("- fact 0\n- fact A\n"), if_match=seen_by_a.version)
-        with pytest.raises(VersionMismatch) as caught:
-            await b.update(URI, text("- fact 0\n- fact B\n"), if_match=seen_by_b.version)
-        assert caught.value.current_version == written.version
+        written = await a.update(URI, text("- fact 0\n- fact A\n"), if_match=seen_by_a.revision)
+        with pytest.raises(RevisionMismatch) as caught:
+            await b.update(URI, text("- fact 0\n- fact B\n"), if_match=seen_by_b.revision)
+        assert caught.value.current_revision == written.revision
 
-        # The rejected writer re-reads, merges, and retries against the version it was told about.
-        retried = await b.update(URI, text("- fact 0\n- fact A\n- fact B\n"), if_match=caught.value.current_version)
-        assert retried.changes[0].previous_version == written.version
+        # The rejected writer re-reads, merges, and retries against the revision it was told about.
+        retried = await b.update(URI, text("- fact 0\n- fact A\n- fact B\n"), if_match=caught.value.current_revision)
+        assert retried.changes[0].previous_revision == written.revision
 
 
 async def test_directory_read_reuses_the_skills_method_shape() -> None:
@@ -185,7 +189,7 @@ async def test_directory_read_reuses_the_skills_method_shape() -> None:
 
         children = {r.uri: r for r in await ops.read_directory("mem://notes")}
         assert set(children) == {URI, "mem://notes/archive"}
-        assert children[URI].meta == {VERSION_META_KEY: created.version}
+        assert children[URI].meta == {REVISION_META_KEY: created.revision}
         assert children["mem://notes/archive"].mime_type == DIRECTORY_MIME_TYPE
         assert (await ops.stat("mem://notes/archive")).resource.mime_type == DIRECTORY_MIME_TYPE
 

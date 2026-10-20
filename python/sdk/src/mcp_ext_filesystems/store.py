@@ -16,23 +16,23 @@ from mcp_ext_filesystems.errors import (
     InvalidResourceUri,
     OperationNotSupported,
     ResourceNotFound,
-    VersionMismatch,
+    RevisionMismatch,
 )
-from mcp_ext_filesystems.wire import DIRECTORY_MIME_TYPE, VERSION_META_KEY, ResourceContents
+from mcp_ext_filesystems.wire import DIRECTORY_MIME_TYPE, REVISION_META_KEY, ResourceContents
 
 
 @dataclass(frozen=True)
 class Stat:
-    """A resource's metadata and its current version."""
+    """A resource's metadata and its current revision."""
 
     resource: Resource
-    version: str
+    revision: str
 
 
 class ResourceStore(Protocol):
     """Backend for the extension.
 
-    Each write MUST compare the version and apply the change atomically: the extension does not hold a lock
+    Each write MUST compare the revision and apply the change atomically: the extension does not hold a lock
     between a check and a write, so a store that checks then writes in two steps reintroduces lost updates.
     Methods raise the typed errors in `mcp_ext_filesystems.errors`.
     """
@@ -42,15 +42,15 @@ class ResourceStore(Protocol):
         ...
 
     async def create(self, uri: str, contents: ResourceContents) -> Stat:
-        """Create `uri` only if it does not exist; raise `AlreadyExists` with the current version otherwise."""
+        """Create `uri` only if it does not exist; raise `AlreadyExists` with the current revision otherwise."""
         ...
 
     async def update(self, uri: str, contents: ResourceContents, if_match: str) -> tuple[str, Stat]:
-        """Replace `uri` only if its version equals `if_match`. Return the previous version and the new stat."""
+        """Replace `uri` only if its revision equals `if_match`. Return the previous revision and the new stat."""
         ...
 
     async def delete(self, uri: str, if_match: str | None) -> str:
-        """Delete `uri`, conditionally if `if_match` is set. Return the deleted version."""
+        """Delete `uri`, conditionally if `if_match` is set. Return the deleted revision."""
         ...
 
     async def read_directory(self, uri: str) -> list[Resource]:
@@ -61,21 +61,21 @@ class ResourceStore(Protocol):
 @dataclass(frozen=True)
 class _Entry:
     contents: ResourceContents
-    version: str
+    revision: str
     last_modified: str
 
 
 class InMemoryStore:
     """A flat map from URI to contents. Directories are implicit: a URI is a directory if it has descendants.
 
-    Versions come from one counter shared by every URI, so a deleted and re-created resource never repeats a
-    version. Writes contain no `await`, which makes each compare-and-write atomic on a single event loop.
+    Revisions come from one counter shared by every URI, so a deleted and re-created resource never repeats a
+    revision. Writes contain no `await`, which makes each compare-and-write atomic on a single event loop.
     """
 
     def __init__(self, scheme: str = "mem") -> None:
         self._scheme = scheme
         self._entries: dict[str, _Entry] = {}
-        self._versions = count(1)
+        self._revisions = count(1)
 
     async def stat(self, uri: str) -> Stat:
         return self._stat(uri)
@@ -83,34 +83,34 @@ class InMemoryStore:
     def _stat(self, uri: str) -> Stat:
         entry = self._entries.get(uri)
         if entry is not None:
-            return Stat(_describe(uri, entry), entry.version)
+            return Stat(_describe(uri, entry), entry.revision)
         children = self._children(uri)
         if not children:
             raise ResourceNotFound(uri)
-        # A directory's version changes whenever the set of its direct children or any child's version changes.
-        digest = hashlib.sha256(repr(sorted((c.uri, (c.meta or {}).get(VERSION_META_KEY)) for c in children)).encode())
+        # A directory's revision changes whenever the set of its direct children or any child's revision changes.
+        digest = hashlib.sha256(repr(sorted((c.uri, (c.meta or {}).get(REVISION_META_KEY)) for c in children)).encode())
         return Stat(_directory(uri), "d-" + digest.hexdigest()[:16])
 
     async def create(self, uri: str, contents: ResourceContents) -> Stat:
         self._check_writable(uri)
         if uri in self._entries or self._children(uri):
-            raise AlreadyExists(uri, self._stat(uri).version)
+            raise AlreadyExists(uri, self._stat(uri).revision)
         entry = self._write(uri, contents)
-        return Stat(_describe(uri, entry), entry.version)
+        return Stat(_describe(uri, entry), entry.revision)
 
     async def update(self, uri: str, contents: ResourceContents, if_match: str) -> tuple[str, Stat]:
         current = self._file(uri)
-        if current.version != if_match:
-            raise VersionMismatch(uri, current.version)
+        if current.revision != if_match:
+            raise RevisionMismatch(uri, current.revision)
         entry = self._write(uri, contents)
-        return current.version, Stat(_describe(uri, entry), entry.version)
+        return current.revision, Stat(_describe(uri, entry), entry.revision)
 
     async def delete(self, uri: str, if_match: str | None) -> str:
         current = self._file(uri)
-        if if_match is not None and current.version != if_match:
-            raise VersionMismatch(uri, current.version)
+        if if_match is not None and current.revision != if_match:
+            raise RevisionMismatch(uri, current.revision)
         del self._entries[uri]
-        return current.version
+        return current.revision
 
     async def read_directory(self, uri: str) -> list[Resource]:
         if uri in self._entries:
@@ -138,7 +138,7 @@ class InMemoryStore:
 
     def _write(self, uri: str, contents: ResourceContents) -> _Entry:
         stamp = datetime.now(timezone.utc).isoformat()
-        entry = _Entry(contents.model_copy(update={"uri": uri}), str(next(self._versions)), stamp)
+        entry = _Entry(contents.model_copy(update={"uri": uri}), str(next(self._revisions)), stamp)
         self._entries[uri] = entry
         return entry
 
@@ -169,7 +169,7 @@ def _describe(uri: str, entry: _Entry) -> Resource:
         mime_type=contents.mime_type,
         size=size,
         annotations=Annotations(last_modified=entry.last_modified),
-        _meta={VERSION_META_KEY: entry.version},
+        _meta={REVISION_META_KEY: entry.revision},
     )
 
 

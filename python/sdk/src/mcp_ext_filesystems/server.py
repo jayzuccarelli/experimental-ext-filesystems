@@ -83,28 +83,28 @@ class ResourceOperations(Extension):
     async def _stat(self, ctx: ServerRequestContext[Any, Any], params: StatParams) -> HandlerResult:
         _check_uri(params.uri)
         stat = await self._store.stat(params.uri)
-        return StatResult(resource=stat.resource, version=stat.version)
+        return StatResult(resource=stat.resource, revision=stat.revision)
 
     async def _create(self, ctx: ServerRequestContext[Any, Any], params: CreateParams) -> HandlerResult:
         _check_uri(params.uri, params.contents.uri)
         stat = await self._store.create(params.uri, params.contents)
         await self._publish(ResourcesListChanged())
-        change = ResourceChange(uri=params.uri, effect="created", version=stat.version)
-        return CreateResult(resource=stat.resource, version=stat.version, changes=[change])
+        change = ResourceChange(uri=params.uri, effect="created", revision=stat.revision)
+        return CreateResult(resource=stat.resource, revision=stat.revision, changes=[change])
 
     async def _update(self, ctx: ServerRequestContext[Any, Any], params: UpdateParams) -> HandlerResult:
         _check_uri(params.uri, params.contents.uri)
         previous, stat = await self._store.update(params.uri, params.contents, params.if_match)
         await self._publish(ResourceUpdated(uri=params.uri))
-        change = ResourceChange(uri=params.uri, effect="updated", previous_version=previous, version=stat.version)
-        return UpdateResult(resource=stat.resource, version=stat.version, changes=[change])
+        change = ResourceChange(uri=params.uri, effect="updated", previous_revision=previous, revision=stat.revision)
+        return UpdateResult(resource=stat.resource, revision=stat.revision, changes=[change])
 
     async def _delete(self, ctx: ServerRequestContext[Any, Any], params: DeleteParams) -> HandlerResult:
         _check_uri(params.uri)
         previous = await self._store.delete(params.uri, params.if_match)
         await self._publish(ResourceUpdated(uri=params.uri))
         await self._publish(ResourcesListChanged())
-        return DeleteResult(changes=[ResourceChange(uri=params.uri, effect="deleted", previous_version=previous)])
+        return DeleteResult(changes=[ResourceChange(uri=params.uri, effect="deleted", previous_revision=previous)])
 
     async def _read_directory(self, ctx: ServerRequestContext[Any, Any], params: ReadDirectoryParams) -> HandlerResult:
         _check_uri(params.uri)

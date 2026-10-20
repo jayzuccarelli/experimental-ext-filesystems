@@ -14,7 +14,7 @@ from mcp.shared.exceptions import MCPError
 from mcp_types import INVALID_PARAMS
 
 PRECONDITION_FAILED = -32010
-"""Provisional: `ifMatch` did not match, or `resources/create` found the URI taken. `data.currentVersion` is set."""
+"""Provisional: `ifMatch` did not match, or `resources/create` found the URI taken. `data.currentRevision` is set."""
 
 NOT_SUPPORTED = -32011
 """Provisional: the server does not support this operation on this URI."""
@@ -26,13 +26,13 @@ class ResourceOperationError(MCPError):
     code_value: int = INVALID_PARAMS
     reason: str = ""
 
-    def __init__(self, uri: str, message: str, *, current_version: str | None = None) -> None:
+    def __init__(self, uri: str, message: str, *, current_revision: str | None = None) -> None:
         data: dict[str, Any] = {"uri": uri, "reason": self.reason}
-        if current_version is not None:
-            data["currentVersion"] = current_version
+        if current_revision is not None:
+            data["currentRevision"] = current_revision
         super().__init__(code=self.code_value, message=message, data=data)
         self.uri = uri
-        self.current_version = current_version
+        self.current_revision = current_revision
 
 
 class ResourceNotFound(ResourceOperationError):
@@ -49,20 +49,22 @@ class InvalidResourceUri(ResourceOperationError):
         super().__init__(uri, f"Invalid resource URI {uri!r}: {detail}")
 
 
-class VersionMismatch(ResourceOperationError):
+class RevisionMismatch(ResourceOperationError):
     code_value = PRECONDITION_FAILED
-    reason = "versionMismatch"
+    reason = "revisionMismatch"
 
-    def __init__(self, uri: str, current_version: str) -> None:
-        super().__init__(uri, f"ifMatch does not match the current version of {uri}", current_version=current_version)
+    def __init__(self, uri: str, current_revision: str) -> None:
+        super().__init__(
+            uri, f"ifMatch does not match the current revision of {uri}", current_revision=current_revision
+        )
 
 
 class AlreadyExists(ResourceOperationError):
     code_value = PRECONDITION_FAILED
     reason = "alreadyExists"
 
-    def __init__(self, uri: str, current_version: str) -> None:
-        super().__init__(uri, f"Resource already exists: {uri}", current_version=current_version)
+    def __init__(self, uri: str, current_revision: str) -> None:
+        super().__init__(uri, f"Resource already exists: {uri}", current_revision=current_revision)
 
 
 class OperationNotSupported(ResourceOperationError):
@@ -76,7 +78,7 @@ class OperationNotSupported(ResourceOperationError):
 def from_mcp_error(error: MCPError) -> MCPError:
     """Map a wire error back to its typed exception; return `error` unchanged if it is not one of ours."""
     data = error.data if isinstance(error.data, dict) else {}
-    uri, reason, current = data.get("uri"), data.get("reason"), data.get("currentVersion")
+    uri, reason, current = data.get("uri"), data.get("reason"), data.get("currentRevision")
     if not isinstance(uri, str):
         return error
     if error.code == INVALID_PARAMS and reason == "notFound":
@@ -84,8 +86,8 @@ def from_mcp_error(error: MCPError) -> MCPError:
     if error.code == INVALID_PARAMS and reason == "invalidUri":
         return InvalidResourceUri(uri)
     if error.code == PRECONDITION_FAILED and isinstance(current, str):
-        if reason == "versionMismatch":
-            return VersionMismatch(uri, current)
+        if reason == "revisionMismatch":
+            return RevisionMismatch(uri, current)
         if reason == "alreadyExists":
             return AlreadyExists(uri, current)
     if error.code == NOT_SUPPORTED:

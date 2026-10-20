@@ -30,16 +30,16 @@ Client: wrap a connected session. Errors arrive as typed exceptions.
 from mcp import Client
 from mcp_types import TextResourceContents
 
-from mcp_ext_filesystems import ResourceOperationsClient, VersionMismatch
+from mcp_ext_filesystems import ResourceOperationsClient, RevisionMismatch
 
 uri = "mem://notes/plan.md"
 async with Client(server) as client:
     ops = ResourceOperationsClient(client.session)
     created = await ops.create(uri, TextResourceContents(uri=uri, text="# Plan\n"))
     try:
-        await ops.update(uri, TextResourceContents(uri=uri, text="# Plan\n- ship\n"), if_match=created.version)
-    except VersionMismatch as conflict:
-        ...  # someone else wrote first: re-read, merge, retry with conflict.current_version
+        await ops.update(uri, TextResourceContents(uri=uri, text="# Plan\n- ship\n"), if_match=created.revision)
+    except RevisionMismatch as conflict:
+        ...  # someone else wrote first: re-read, merge, retry with conflict.current_revision
 ```
 
 Store-backed resources are not readable through `resources/read` unless the server registers a resource template for them; see "SDK extension points" in the proposal.

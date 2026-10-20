@@ -21,8 +21,8 @@ from pydantic.alias_generators import to_camel
 EXTENSION_ID = "io.modelcontextprotocol/resource-operations"
 """Provisional identifier, advertised under `capabilities.extensions` (SEP-2133)."""
 
-VERSION_META_KEY = "io.modelcontextprotocol/resource-version"
-"""`_meta` key that carries a version on core shapes this extension may not retype (read contents, list entries)."""
+REVISION_META_KEY = "io.modelcontextprotocol/resource-revision"
+"""`_meta` key that carries a revision on core shapes this extension may not retype (read contents, list entries)."""
 
 DIRECTORY_MIME_TYPE = "inode/directory"
 """Marks a directory resource, as in SEP-2640."""
@@ -47,8 +47,8 @@ class ResourceChange(_WireModel):
 
     uri: str
     effect: Effect
-    previous_version: str | None = None
-    version: str | None = None
+    previous_revision: str | None = None
+    revision: str | None = None
 
 
 class StatParams(RequestParams):
@@ -57,7 +57,7 @@ class StatParams(RequestParams):
 
 class StatResult(CacheableResult):
     resource: Resource
-    version: str
+    revision: str
 
 
 class CreateParams(RequestParams):
@@ -67,7 +67,7 @@ class CreateParams(RequestParams):
 
 class CreateResult(Result):
     resource: Resource
-    version: str
+    revision: str
     changes: list[ResourceChange]
 
 
@@ -79,7 +79,7 @@ class UpdateParams(RequestParams):
 
 class UpdateResult(Result):
     resource: Resource
-    version: str
+    revision: str
     changes: list[ResourceChange]
 
 

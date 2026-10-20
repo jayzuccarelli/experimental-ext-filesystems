@@ -3,7 +3,7 @@
     async with Client(server) as client:
         ops = ResourceOperationsClient(client.session)
         stat = await ops.stat("mem://notes/plan.md")
-        await ops.update("mem://notes/plan.md", TextResourceContents(uri=..., text="..."), if_match=stat.version)
+        await ops.update("mem://notes/plan.md", TextResourceContents(uri=..., text="..."), if_match=stat.revision)
 
 Wire errors come back as the typed exceptions in `mcp_ext_filesystems.errors`.
 """
