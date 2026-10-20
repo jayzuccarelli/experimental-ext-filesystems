@@ -1,8 +1,11 @@
-# CODEOWNERS for the experimental-ext-filesystems repository.
+# CODEOWNERS file for the experimental-ext-filesystems repository
+# This file defines code review assignments for pull requests.
+#
+# For more information about CODEOWNERS, see:
 # https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 #
 # Team mappings are configured in the access repository:
 # https://github.com/modelcontextprotocol/access
 
-# Default owners for all files: reviews route to the Filesystems Working Group.
-* @modelcontextprotocol/filesystems-wg
+# Default owners for all files — reviews route to the Filesystems Working Group leads.
+* @modelcontextprotocol/filesystems-wg-leads
